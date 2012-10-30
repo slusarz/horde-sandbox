@@ -67,16 +67,16 @@ Table of Contents
        2.1.2.  STATE Command with No Argument . . . . . . . . . . . .  5
      2.2.  SAVESTATE Command  . . . . . . . . . . . . . . . . . . . .  5
      2.3.  STATE Response . . . . . . . . . . . . . . . . . . . . . .  5
-     2.4.  SAVESTATE Response . . . . . . . . . . . . . . . . . . . .  5
+     2.4.  SAVESTATE Response . . . . . . . . . . . . . . . . . . . .  6
      2.5.  STATECMD Response Code . . . . . . . . . . . . . . . . . .  6
    3.  Examples . . . . . . . . . . . . . . . . . . . . . . . . . . .  7
-   4.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . .  8
-   5.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  8
-   6.  Security Considerations  . . . . . . . . . . . . . . . . . . .  8
-   7.  Normative References . . . . . . . . . . . . . . . . . . . . .  8
-   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . .  8
+   4.  Formal Syntax  . . . . . . . . . . . . . . . . . . . . . . . .  8
+   5.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . .  8
+   6.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  8
+   7.  Security Considerations  . . . . . . . . . . . . . . . . . . .  8
+   8.  Normative References . . . . . . . . . . . . . . . . . . . . .  8
+   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . .  9
    Intellectual Property and Copyright Statements . . . . . . . . . . 10
-
 
 
 
@@ -118,14 +118,13 @@ Internet-Draft            IMAP STATE Extension              October 2012
    [TODO: Reorganize this section.  Disconnected talk should probably go
    lower in section, after talk about activating extensions.]
 
-   The original IMAP4rev1 [RFC3501] protocol specification was
-   primarily designed to be used by clients that remain connected to the
-   IMAP server for extended periods of time.  Since that time,
-   "disconnected" IMAP clients [RFC4549] have become increasingly
-   popular and numerous, due to the rise in, for example, portable
-   devices that do not have persistent connections to the remove server,
-   or for which keeping an active connection is expensive (in terms of
-   computing and/or power).
+   The original IMAP4rev1 [RFC3501] protocol specification was primarily
+   designed to be used by clients that remain connected to the IMAP
+   server for extended periods of time.  Since that time, "disconnected"
+   IMAP clients [RFC4549] have become increasingly popular and numerous,
+   due to the rise in, for example, portable devices that do not have
+   persistent connections to the remove server, or for which keeping an
+   active connection is expensive (in terms of computing and/or power).
 
    In response to the rise of these disconnected clients, various IMAP
    extensions have been developed to assist in managing the remote
@@ -159,6 +158,7 @@ Internet-Draft            IMAP STATE Extension              October 2012
 
    An IMAP server that supports STATE advertises this by including the
    word STATE in its capability list.
+
 
 
 
@@ -204,8 +204,8 @@ Internet-Draft            IMAP STATE Extension              October 2012
 
    If a client issues this command, and the server responds with an OK
    tagged result, the server MUST send the STATECMD response code (see
-   Section 2.5) for any additonal command issued that can be saved via a
-   state token.
+   Section 2.5) for any additional command issued that can be saved via
+   a state token.
 
 2.1.1.  STATE Command with Optional Token Argument
 
@@ -246,7 +246,19 @@ Internet-Draft            IMAP STATE Extension              October 2012
                NO - error: state could not be stored
                BAD - command unknown or arguments invalid
 
-   This section defines a new SAVESTATE command, which works
+   This section defines a new SAVESTATE command.
+
+   This command takes no arguments.  If the current IMAP session state
+   can be saved, this command causes an untagged SAVESTATE response (see
+   Section 2.4) to be issued which contains a token string that can be
+   used to restore the current state, as it exists at the time the
+   SAVESTATE command was issued.
+
+   If a server cannot save state, a SAVESTATE response MUST NOT be
+   issued and a NO tagged response MUST be returned.
+
+   [TODO: Should this command require that STATE be issued earlier in
+   the session?
 
 2.3.  STATE Response
 
@@ -257,6 +269,17 @@ Internet-Draft            IMAP STATE Extension              October 2012
    This response indicates that the server successfully restored the
    session state to be identical to that as when the client issued the
    SAVESTATE command in a previous IMAP session.
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 5]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
 
 2.4.  SAVESTATE Response
 
@@ -273,14 +296,6 @@ Internet-Draft            IMAP STATE Extension              October 2012
    restoring state in case the internal state storage mechanism in the
    server would change in the future.  However, interpretation of the
    contents or format of the state token is left entirely to the server
-
-
-
-Slusarz                    Expires May 3, 2013                  [Page 5]
-
-Internet-Draft            IMAP STATE Extension              October 2012
-
-
    implementor.
 
 2.5.  STATECMD Response Code
@@ -298,21 +313,6 @@ Internet-Draft            IMAP STATE Extension              October 2012
    of the saved state and does not need to be executed again if the
    state is successfully restored via STORE (see Section 2.1) in a
    subsequent IMAP session.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -398,26 +398,56 @@ Internet-Draft            IMAP STATE Extension              October 2012
              S: A1 OK Angemeldet.
 
 
-4.  IANA Considerations
+4.  Formal Syntax
+
+   The following syntax specification uses the Augmented Backus-Naur
+   Form (ABNF) as described in [RFC5234].  Terms not defined here are
+   taken from [RFC3501].
+
+   capability =/  "STATE"
+
+   command-auth =/  state / savestate
+
+   response-data =/  "*" SP state-response CRLF
+
+   resp-text-code =/  STATECMD SP tag
+
+   savestate =  "SAVESTATE"
+
+   state = "STATE" *(SP state-token)
+
+   state-response =  "SAVESTATE" SP state-token / "STATE" SP state-token
+
+   state-token =  astring
+
+
+5.  IANA Considerations
 
    The IANA is requested to add STORE to the "IMAP 4 Capabilities"
    registry, http://www.iana.org/assignments/imap4-capabilities.
 
 
-5.  Acknowledgements
+6.  Acknowledgements
 
 
-6.  Security Considerations
+7.  Security Considerations
 
    It is believed that this extension doesn't add any security
    considerations that are not already present in the base IMAP protocol
    [RFC3501].
 
 
-7.  Normative References
+8.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 8]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
 
    [RFC2971]  Showalter, T., "IMAP4 ID extension", RFC 2971,
               October 2000.
@@ -432,21 +462,8 @@ Internet-Draft            IMAP STATE Extension              October 2012
               Extensions for Quick Mailbox Resynchronization", RFC 5162,
               March 2008.
 
-
-
-
-
-
-
-
-
-
-
-
-
-Slusarz                    Expires May 3, 2013                  [Page 8]
-
-Internet-Draft            IMAP STATE Extension              October 2012
+   [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
+              Specifications: ABNF", STD 68, RFC 5234, January 2008.
 
 
 Author's Address
@@ -457,23 +474,6 @@ Author's Address
    USA
 
    Email: slusarz@horde.org
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
