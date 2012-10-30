@@ -5,6 +5,7 @@
 <!ENTITY RFC3501 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3501.xml">
 <!ENTITY RFC4549 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4549.xml">
 <!ENTITY RFC5162 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5162.xml">
+<!ENTITY RFC5234 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5234.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes" ?>
@@ -310,6 +311,27 @@
       </figure>
     </section>
 
+    <section anchor="syntax" title="Formal Syntax">
+      <t>
+        The following syntax specification uses the Augmented Backus-Naur
+        Form (ABNF) as described in <xref target="RFC5234"/>.
+        Terms not defined here are taken from <xref target="RFC3501"/>.
+      </t>
+
+      <t>
+        <list style="hanging" hangIndent="8">
+          <t hangText="capability =/">"STATE"</t>
+          <t hangText="command-auth =/">state / savestate</t>
+          <t hangText="response-data =/">"*" SP state-response CRLF</t>
+          <t hangText="resp-text-code =/">STATECMD SP tag</t>
+          <t hangText="savestate =">"SAVESTATE"</t>
+          <t hangText="state =">"STATE" *(SP state-token)</t>
+          <t hangText="state-response =">"SAVESTATE" SP state-token / "STATE" SP state-token</t>
+          <t hangText="state-token =">astring</t>
+        </list>
+      </t>
+    </section>
+
     <section anchor="IANA" title="IANA Considerations">
       <t>The IANA is requested to add STORE to the "IMAP 4 Capabilities"
       registry, http://www.iana.org/assignments/imap4-capabilities.</t>
@@ -333,6 +355,7 @@
       &RFC3501;
       &RFC4549;
       &RFC5162;
+      &RFC5234;
     </references>
   </back>
 </rfc>
