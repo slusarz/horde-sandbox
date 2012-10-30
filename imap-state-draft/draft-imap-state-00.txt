@@ -1,0 +1,560 @@
+
+
+
+IETF                                                          M. Slusarz
+Internet-Draft                                                 Horde LLC
+Intended status: Standards Track                        October 30, 2012
+Expires: May 3, 2013
+
+
+                          IMAP STATE Extension
+                          draft-imap-state-00
+
+Abstract
+
+   This document defines a STATE extension for the IMAP4rev1 protocol.
+   It provides a method for a mail client to save the current state of
+   an IMAP session and then quickly restore this state in a subsequent
+   session.
+
+Status of this Memo
+
+   By submitting this Internet-Draft, each author represents that any
+   applicable patent or other IPR claims of which he or she is aware
+   have been or will be disclosed, and any of which he or she becomes
+   aware will be disclosed, in accordance with Section 6 of BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on May 3, 2013.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 1]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+Table of Contents
+
+   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
+     1.1.  Requirements Language  . . . . . . . . . . . . . . . . . .  4
+   2.  IMAP Protocol Changes  . . . . . . . . . . . . . . . . . . . .  4
+     2.1.  STATE Command  . . . . . . . . . . . . . . . . . . . . . .  4
+       2.1.1.  STATE Command with Optional Token Argument . . . . . .  4
+       2.1.2.  STATE Command with No Argument . . . . . . . . . . . .  5
+     2.2.  SAVESTATE Command  . . . . . . . . . . . . . . . . . . . .  5
+     2.3.  STATE Response . . . . . . . . . . . . . . . . . . . . . .  5
+     2.4.  SAVESTATE Response . . . . . . . . . . . . . . . . . . . .  5
+     2.5.  STATECMD Response Code . . . . . . . . . . . . . . . . . .  6
+   3.  Examples . . . . . . . . . . . . . . . . . . . . . . . . . . .  7
+   4.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . .  8
+   5.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  8
+   6.  Security Considerations  . . . . . . . . . . . . . . . . . . .  8
+   7.  Normative References . . . . . . . . . . . . . . . . . . . . .  8
+   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . .  8
+   Intellectual Property and Copyright Statements . . . . . . . . . . 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 2]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+1.  Introduction
+
+   [TODO: Reorganize this section.  Disconnected talk should probably go
+   lower in section, after talk about activating extensions.]
+
+   The original IMAP4rev1 [RFC3501] protocol specification was
+   primarily designed to be used by clients that remain connected to the
+   IMAP server for extended periods of time.  Since that time,
+   "disconnected" IMAP clients [RFC4549] have become increasingly
+   popular and numerous, due to the rise in, for example, portable
+   devices that do not have persistent connections to the remove server,
+   or for which keeping an active connection is expensive (in terms of
+   computing and/or power).
+
+   In response to the rise of these disconnected clients, various IMAP
+   extensions have been developed to assist in managing the remote
+   account.  [TODO: Links to LEMONDAE profile?  UIDPLUS?]  Some of these
+   extensions, such as QRESYNC [RFC5162], require explicit action by the
+   client in order to activate their features.
+
+   Additionally, advanced IMAP features have been implemented as various
+   extensions, many of which require proactive action by the client in
+   order to activate their fetures.  [TODO: Links to LANGUAGE?  NOTIFY?]
+
+   Finally, there is additional overhead when connecting to an IMAP
+   server (e.g. entering authenticated state) because the client needs
+   to do things like determine the capabilities of the remote server
+   (CAPABILITY command - RFC 3551 [6.1.1]) and, possibly, send/receive
+   identification information (ID command [RFC2971]).
+
+   Therefore, even if a disconnected client connects to an IMAP4rev1
+   server that supports all extensions, it still faces the (potentially
+   substantial) overhead of needing to perform all of these
+   initialization tasks before the client can begin to do "useful" work
+   from the perspective of a user (e.g. listing mailboxes, accessing
+   messages).  For clients that are unable to maintain an IMAP
+   connection (clients connecting through HTTP - webmail clients), many
+   of the gains provided by these existing IMAP extensions are tempered
+   by the overhead to enable them on every access.
+
+   The STATE extensions provides a mechanism for a client to save the
+   state of an existing session, and then quickly re-establish this
+   state on the next server access.
+
+   An IMAP server that supports STATE advertises this by including the
+   word STATE in its capability list.
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 3]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+
+2.  IMAP Protocol Changes
+
+2.1.  STATE Command
+
+   Arguments:  OPTIONAL state token
+
+   Responses:  OPTIONAL untagged response: STATE
+
+   Result:     OK - state command completed succesfully
+               NO - error: state storage not available
+               BAD - command unknown or arguments invalid
+
+   This section defines a new STATE command.
+
+   The STATE command serves two purposes.  With the optional token
+   argument, it is the client's attempt to restore state given the
+   previous token generated by the server.  Without this argument, it
+   indicates to the server that the client will attempt to save state
+   later in the session and the server MUST send the STATECMD (see
+   Section 2.5) response code for any command that will be stored via
+   the state token.
+
+   The STATE command MUST only be issued in the IMAP authenticated state
+   (the state token could potentially include sensitive information and
+   should only be sent after any security layer has been initiated).
+
+   If a client issues this command, and the server responds with an OK
+   tagged result, the server MUST send the STATECMD response code (see
+   Section 2.5) for any additonal command issued that can be saved via a
+   state token.
+
+2.1.1.  STATE Command with Optional Token Argument
+
+   If the optional state token argument is provided, this is the
+   client's attempt to restore the state from a previous session.  The
+   token argument is the token string returned by the IMAP server in
+   response to a SAVESTATE command issued in a previous session.
+
+   If the server can successfully restore the state indicated by the
+   given token, it MUST issue an untagged STATE response (see
+   Section 2.3).
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 4]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+   If the server can not restore the state, no STATE untagged response
+   should be returned.
+
+2.1.2.  STATE Command with No Argument
+
+   If the state token argument is not provided, this indicates that the
+   client does not wish to restore the state with a previous token.
+   However, the client desires that STATECMD response codes be sent as
+   the client will issue a SAVESTATE command once it has completed all
+   initialization tasks necessary.
+
+2.2.  SAVESTATE Command
+
+   Arguments:  none
+
+   Responses:  REQUIRED untagged response: SAVESTATE
+
+   Result:     OK - state successfully stored
+               NO - error: state could not be stored
+               BAD - command unknown or arguments invalid
+
+   This section defines a new SAVESTATE command, which works
+
+2.3.  STATE Response
+
+   Contents:   state token
+
+   The STATE response occurs as a result of a STATE command.  The state
+   token refers to the token argument provided to the STATE command.
+   This response indicates that the server successfully restored the
+   session state to be identical to that as when the client issued the
+   SAVESTATE command in a previous IMAP session.
+
+2.4.  SAVESTATE Response
+
+   Contents:   state token
+
+   The STATE response occurs as a result of a SAVESTATE command.  The
+   state token is a server-specific representation of the current state
+   in the IMAP session.  The current state consists of all IMAP commands
+   issued after a successful STATE command (see Section 2.1) that
+   returned a STATECMD response (see Section 2.5).
+
+   It is RECOMMENDED that the state token contain some sort of
+   versioning mechanism that would cause the token to be unsuccessful in
+   restoring state in case the internal state storage mechanism in the
+   server would change in the future.  However, interpretation of the
+   contents or format of the state token is left entirely to the server
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 5]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+   implementor.
+
+2.5.  STATECMD Response Code
+
+   This document adds a new response code that is returned in the OK
+   untagged response for a successful IMAP command that can be stored in
+   the state:
+
+               OK [STATECMD <tag>]
+
+               where <tag> is the tag of the command that can be stored
+               in the saved state.
+
+   This response code indicates to the client that the command is part
+   of the saved state and does not need to be executed again if the
+   state is successfully restored via STORE (see Section 2.1) in a
+   subsequent IMAP session.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 6]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+3.  Examples
+
+   Example 1: A client connects to a server and does not have any prior
+   state information.  The client verifies that the server supports the
+   STATE extension, performs its initialization, and obtains a state
+   token.  This example assumes that the client has successfully
+   completed authorization to the IMAP server.
+
+             C: A1 CAPABILITY
+             S: * CAPABILITY IMAP4rev1 ID ENABLE QRESYNC I18NLEVEL=1
+                  STORE
+             S: A1 OK Capability command completed.
+             C: A2 STATE
+             S: A2 OK State not restored, but state command tracking
+                   enabled.
+             C: A3 ID ("name" "foo" "version" "1.0")
+             S: * ID ("name" "foo2" "version" "2.0")
+             S: A3 ID command completed.
+             C: A4 ENABLE QRESYNC
+             S: * ENABLED QRESYNC
+             S: * OK [STATECMD A4] QRESYNC command will be saved in
+                  state data.
+             S: A4 OK Enable command completed.
+             C: A5 LANGUAGE DE
+             S: * LANGUAGE (DE)
+             S: * NAMESPACE (("" "/")) (("Other Users/" "/"
+                  "TRANSLATION" ("Andere Ben&APw-tzer/")))
+                  (("Public Folders/" "/" "TRANSLATION"
+                  ("Gemeinsame Postf&AM8-cher/")))
+             S: * OK [STATECMD A5] LANGUAGE command will be saved in
+                  state data.
+             S: A5 Sprachwechsel durch LANGUAGE-Befehl ausgefuehrt
+             C: A6 SAVESTATE
+             S: * SAVESTATE c3RhdGUgdG9rZW4=
+             S: A6 Savestate command completed.
+
+   Example 2: The client in Example 1 connects at a future time to the
+   same server and seeks to restore the previous IMAP session.  This
+   example assumes that the client has successfully completed
+   authorization to the IMAP server.  (Note that neither the CAPABILITY
+   nor the ID command in Example 1 are saved in the state.  However, a
+   successful restoration of the state implies that the server has not
+   changed.  If the client has cached CAPABILITY data associated with
+   the STATE token, and only desired to send the ID command once per
+   client session, it does not need to issue either of these commands
+   again.)
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 7]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+             C: A1 STATE c3RhdGUgdG9rZW4=
+             S: * STATE c3RhdGUgdG9rZW4=
+             S: A1 OK Angemeldet.
+
+
+4.  IANA Considerations
+
+   The IANA is requested to add STORE to the "IMAP 4 Capabilities"
+   registry, http://www.iana.org/assignments/imap4-capabilities.
+
+
+5.  Acknowledgements
+
+
+6.  Security Considerations
+
+   It is believed that this extension doesn't add any security
+   considerations that are not already present in the base IMAP protocol
+   [RFC3501].
+
+
+7.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [RFC2971]  Showalter, T., "IMAP4 ID extension", RFC 2971,
+              October 2000.
+
+   [RFC3501]  Crispin, M., "INTERNET MESSAGE ACCESS PROTOCOL - VERSION
+              4rev1", RFC 3501, March 2003.
+
+   [RFC4549]  Melnikov, A., "Synchronization Operations for Disconnected
+              IMAP4 Clients", RFC 4549, June 2006.
+
+   [RFC5162]  Melnikov, A., Cridland, D., and C. Wilson, "IMAP4
+              Extensions for Quick Mailbox Resynchronization", RFC 5162,
+              March 2008.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 8]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+Author's Address
+
+   Michael M. Slusarz
+   Horde LLC
+   Denver, Colorado
+   USA
+
+   Email: slusarz@horde.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                  [Page 9]
+
+Internet-Draft            IMAP STATE Extension              October 2012
+
+
+Full Copyright Statement
+
+   Copyright (C) The IETF Trust (2012).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY, THE IETF TRUST AND
+   THE INTERNET ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+   THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+
+
+
+
+
+
+
+
+
+
+Slusarz                    Expires May 3, 2013                 [Page 10]
+
