@@ -15,7 +15,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-imap-state-00" ipr="full3978">
+<rfc category="std" docName="draft-imap-state-00" ipr="trust200902">
   <front>
     <title>IMAP STATE Extension</title>
 
