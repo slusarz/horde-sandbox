@@ -177,7 +177,19 @@
 	  </list>
 	</t>
 
-	<t>This section defines a new SAVESTATE command, which works </t>
+    <t>This section defines a new SAVESTATE command.</t>
+
+    <t>This command takes no arguments. If the current IMAP session state
+        can be saved, this command causes an untagged SAVESTATE response
+        (see <xref target="savestate-response" />) to be issued which contains
+        a token string that can be used to restore the current state, as it
+        exists at the time the SAVESTATE command was issued.</t>
+
+    <t>If a server cannot save state, a SAVESTATE response MUST NOT be issued
+        and a NO tagged response MUST be returned.</t>
+
+    <t>[TODO: Should this command require that STATE be issued earlier in
+        the session?</t>
       </section>
 
       <section anchor="state-response" title="STATE Response">
