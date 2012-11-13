@@ -2,10 +2,9 @@
 // Usage: phpdoc.php [git branch] [Horde version]
 
 // CONFIG
-//$checkout = '/horde/checkout/horde.git';
-$checkout = '/disk2/src/horde';
-$phpdoc = '/usr/local/php/bin/phpdoc';
-$output_dir = '/httpd/sites/testing.curecanti.org/phpdoc';
+$checkout = '/horde/checkout/horde.git';
+$phpdoc = '/usr/bin/phpdoc';
+$output_dir = '/horde/web/dev.horde.org/api.new';
 // ENDCONFIG
 
 if (count($argv) != 3) {
