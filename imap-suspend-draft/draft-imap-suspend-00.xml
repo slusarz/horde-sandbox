@@ -6,6 +6,7 @@
 <!ENTITY RFC4549 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4549.xml">
 <!ENTITY RFC5162 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5162.xml">
 <!ENTITY RFC5234 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5234.xml">
+<!ENTITY RFC5255 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5255.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes" ?>
@@ -33,7 +34,7 @@
       </address>
     </author>
 
-    <date month="November" year="2012" />
+    <date month="November" year="2012"/>
 
     <area>General</area>
     <workgroup>IETF</workgroup>
@@ -56,11 +57,11 @@
       <t>[TODO: Reorganize this section. Disconnected talk should probably
       go lower in section, after talk about activating extensions.]</t>
 
-      <t>The original IMAP4rev1 <xref target="RFC3501" />
+      <t>The original IMAP4rev1 <xref target="RFC3501"/>
       protocol specification was primarily designed to be used by clients
       that remain connected to the IMAP server for extended periods of
       time. Since that time, "disconnected" IMAP clients
-      <xref target="RFC4549" /> have become increasingly popular and
+      <xref target="RFC4549"/> have become increasingly popular and
       numerous, due to the rise in, for example, portable devices that
       do not maintain persistent connections to the remove server, or for
       which keeping an active connection is expensive (in terms of
@@ -68,15 +69,14 @@
 
       <t>In response to the rise of these disconnected clients, various
       IMAP extensions have been developed to assist in accessing the
-      remote account. [TODO: Links to LEMONDAE profile? UIDPLUS?] Some
+      remote account. [TODO: Links to LEMONADE profile? UIDPLUS?] Some
       of these extensions, such as <xref target="RFC5162">QRESYNC</xref>,
       require explicit action by the client in order to activate their
       features.</t>
 
-      <t>Additionally, advanced IMAP features have been implemented as
-      various extensions, many of which require proactive action by the
-      client in order to activate their fetures. [TODO: Links to
-      LANGUAGE? NOTIFY?]</t>
+      <t>Additionally, other advanced IMAP features, such as the <xref
+      target="RFC5255">LANGUAGE command</xref>, also require explicit
+      activation by the client [TODO: mention NOTIFY?].</t>
 
       <t>Finally, there is additional overhead when connecting to an
       IMAP server (e.g. entering authenticated state) because the client
@@ -96,7 +96,7 @@
 
       <t>The SUSPEND extension provides a mechanism for a client to save
       the state of an existing session and then quickly re-establish
-      this state in subsequent server accesses.</t>
+      this state in subsequent server connections.</t>
 
       <t>An IMAP server that supports SUSPEND advertises this by including
       the word SUSPEND in its capability list.</t>
@@ -114,9 +114,9 @@
         <t>
           <list style="hanging" hangIndent="12">
             <t hangText="Arguments:">none</t>
-            <t hangText="Responses:">REQUIRED untagged response: BYE<vspace />
+            <t hangText="Responses:">REQUIRED untagged response: BYE<vspace/>
               OPTIONAL untagged response: SUSPEND</t>
-            <t hangText="Result:">OK - logout completed<vspace />
+            <t hangText="Result:">OK - logout completed<vspace/>
               BAD - command unknown or arguments invalid
             </t>
           </list>
@@ -125,13 +125,13 @@
         <t>This section defines a new SUSPEND command.</t>
 
         <t>To close the connection with the server, the LOGOUT command
-        <xref target="RFC3501" /> is issued. The SUSPEND command extends
+        <xref target="RFC3501"/> is issued. The SUSPEND command extends
         the LOGOUT command by indicating to the server that, in addition
         to closing the network connection, the client also requests that
         the current connection state be saved.</t>
 
         <t>If the current IMAP session state can be saved, an untagged SUSPEND
-        response (see <xref target="suspend-response" />) MUST be issued. If
+        response (see <xref target="suspend-response"/>) MUST be issued. If
         the server cannot save the current state, a SUSPEND response MUST NOT
         be issued.</t>
 
@@ -145,8 +145,8 @@
           <list style="hanging" hangIndent="12">
             <t hangText="Arguments:">suspend token</t>
             <t hangText="Responses:">no specific responses for this command</t>
-            <t hangText="Result:">OK - state successfully restored<vspace />
-              NO - error: state could not be restored<vspace />
+            <t hangText="Result:">OK - state successfully restored<vspace/>
+              NO - error: state could not be restored<vspace/>
               BAD - command unknown or arguments invalid
             </t>
           </list>
@@ -163,10 +163,10 @@
         [todo: reasoning behind not allowing in not authenticated state: the
         suspend token could potentially include sensitive information and should
         only be sent after any security layer has been initiated; reasoning
-        behind not allowing in selected state: certain state commands may
-        requir this (e.g. ENABLE QRESYNC), and a server may use some sort of
-        "replay" system to restore the session state - these commands may
-        fail pre-existing assertions in the code]).</t>
+        behind not allowing in selected state: certain commands may require
+        authenticated state (e.g. ENABLE QRESYNC) - a server may use some sort
+        of "replay" system to restore the session state which may cause
+        pre-existing sanity checking/assertions in its code to be triggered].</t>
 
         <t>If the server can successfully restore the state indicated by
         the given token, it MUST issue an tagged OK response. This restored
@@ -286,7 +286,7 @@
         </list>
       </t>
 
-      <t>[todo: Token restricted to atom to reduce complexity]</t>
+      <t>[todo: Suspend token restricted to atom to reduce complexity]</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -301,18 +301,21 @@
     <section anchor="Security" title="Security Considerations">
       <t>It is believed that this extension doesn't add any security
       considerations that are not already present in the base IMAP
-      protocol <xref target="RFC3501" />.</t>
+      protocol <xref target="RFC3501"/>.</t>
     </section>
   </middle>
 
   <back>
     <references title="Normative References">
       &RFC2119;
-      &RFC2342;
       &RFC3501;
+      &RFC5234;
+    </references>
+    <references title="Informative References">
+      &RFC2342;
       &RFC4549;
       &RFC5162;
-      &RFC5234;
+      &RFC5255;
     </references>
   </back>
 </rfc>
