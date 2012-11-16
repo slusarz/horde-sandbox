@@ -219,7 +219,11 @@ Acknowledgements<br />
 <a href="#Security">8.</a>&nbsp;
 Security Considerations<br />
 <a href="#rfc.references1">9.</a>&nbsp;
+References<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#rfc.references1">9.1.</a>&nbsp;
 Normative References<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#rfc.references2">9.2.</a>&nbsp;
+Informative References<br />
 <a href="#rfc.authors">&#167;</a>&nbsp;
 Author's Address<br />
 </p>
@@ -245,15 +249,13 @@ Introduction</h3>
 </p>
 <p>In response to the rise of these disconnected clients, various
       IMAP extensions have been developed to assist in accessing the
-      remote account. [TODO: Links to LEMONDAE profile? UIDPLUS?] Some
+      remote account. [TODO: Links to LEMONADE profile? UIDPLUS?] Some
       of these extensions, such as <a class='info' href='#RFC5162'>QRESYNC<span> (</span><span class='info'>Melnikov, A., Cridland, D., and C. Wilson, &ldquo;IMAP4 Extensions for Quick Mailbox Resynchronization,&rdquo; March&nbsp;2008.</span><span>)</span></a> [RFC5162],
       require explicit action by the client in order to activate their
       features.
 </p>
-<p>Additionally, advanced IMAP features have been implemented as
-      various extensions, many of which require proactive action by the
-      client in order to activate their fetures. [TODO: Links to
-      LANGUAGE? NOTIFY?]
+<p>Additionally, other advanced IMAP features, such as the <a class='info' href='#RFC5255'>LANGUAGE command<span> (</span><span class='info'>Newman, C., Gulbrandsen, A., and A. Melnikov, &ldquo;Internet Message Access Protocol Internationalization,&rdquo; June&nbsp;2008.</span><span>)</span></a> [RFC5255], also require explicit
+      activation by the client [TODO: mention NOTIFY?].
 </p>
 <p>Finally, there is additional overhead when connecting to an
       IMAP server (e.g. entering authenticated state) because the client
@@ -273,7 +275,7 @@ Introduction</h3>
 </p>
 <p>The SUSPEND extension provides a mechanism for a client to save
       the state of an existing session and then quickly re-establish
-      this state in subsequent server accesses.
+      this state in subsequent server connections.
 </p>
 <p>An IMAP server that supports SUSPEND advertises this by including
       the word SUSPEND in its capability list.
@@ -367,10 +369,10 @@ RESUME Command</h3>
         [todo: reasoning behind not allowing in not authenticated state: the
         suspend token could potentially include sensitive information and should
         only be sent after any security layer has been initiated; reasoning
-        behind not allowing in selected state: certain state commands may
-        requir this (e.g. ENABLE QRESYNC), and a server may use some sort of
-        "replay" system to restore the session state - these commands may
-        fail pre-existing assertions in the code]).
+        behind not allowing in selected state: certain commands may require
+        authenticated state (e.g. ENABLE QRESYNC) - a server may use some sort
+        of "replay" system to restore the session state which may cause
+        pre-existing sanity checking/assertions in its code to be triggered].
 </p>
 <p>If the server can successfully restore the state indicated by
         the given token, it MUST issue an tagged OK response. This restored
@@ -519,7 +521,7 @@ Formal Syntax</h3>
 </dl></blockquote><p>
       
 </p>
-<p>[todo: Token restricted to atom to reduce complexity]
+<p>[todo: Suspend token restricted to atom to reduce complexity]
 </p>
 <a name="IANA"></a><br /><hr />
 <table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
@@ -545,22 +547,35 @@ Security Considerations</h3>
       considerations that are not already present in the base IMAP
       protocol <a class='info' href='#RFC3501'>[RFC3501]<span> (</span><span class='info'>Crispin, M., &ldquo;INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1,&rdquo; March&nbsp;2003.</span><span>)</span></a>.
 </p>
+<a name="rfc.references"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.9"></a><h3>9.&nbsp;
+References</h3>
+
 <a name="rfc.references1"></a><br /><hr />
 <table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
-<h3>9.&nbsp;Normative References</h3>
+<h3>9.1.&nbsp;Normative References</h3>
 <table width="99%" border="0">
 <tr><td class="author-text" valign="top"><a name="RFC2119">[RFC2119]</a></td>
 <td class="author-text"><a href="mailto:sob@harvard.edu">Bradner, S.</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>,&rdquo; BCP&nbsp;14, RFC&nbsp;2119, March&nbsp;1997 (<a href="http://www.rfc-editor.org/rfc/rfc2119.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc2119.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc2119.xml">XML</a>).</td></tr>
-<tr><td class="author-text" valign="top"><a name="RFC2342">[RFC2342]</a></td>
-<td class="author-text"><a href="mailto:mikega@microsoft.com">Gahrns, M.</a> and <a href="mailto:chris.newman@innosoft.com">C. Newman</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc2342">IMAP4 Namespace</a>,&rdquo; RFC&nbsp;2342, May&nbsp;1998 (<a href="http://www.rfc-editor.org/rfc/rfc2342.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc2342.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc2342.xml">XML</a>).</td></tr>
 <tr><td class="author-text" valign="top"><a name="RFC3501">[RFC3501]</a></td>
 <td class="author-text">Crispin, M., &ldquo;<a href="http://tools.ietf.org/html/rfc3501">INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1</a>,&rdquo; RFC&nbsp;3501, March&nbsp;2003 (<a href="http://www.rfc-editor.org/rfc/rfc3501.txt">TXT</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC5234">[RFC5234]</a></td>
+<td class="author-text">Crocker, D. and P. Overell, &ldquo;<a href="http://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>,&rdquo; STD&nbsp;68, RFC&nbsp;5234, January&nbsp;2008 (<a href="http://www.rfc-editor.org/rfc/rfc5234.txt">TXT</a>).</td></tr>
+</table>
+
+<a name="rfc.references2"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>9.2.&nbsp;Informative References</h3>
+<table width="99%" border="0">
+<tr><td class="author-text" valign="top"><a name="RFC2342">[RFC2342]</a></td>
+<td class="author-text"><a href="mailto:mikega@microsoft.com">Gahrns, M.</a> and <a href="mailto:chris.newman@innosoft.com">C. Newman</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc2342">IMAP4 Namespace</a>,&rdquo; RFC&nbsp;2342, May&nbsp;1998 (<a href="http://www.rfc-editor.org/rfc/rfc2342.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc2342.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc2342.xml">XML</a>).</td></tr>
 <tr><td class="author-text" valign="top"><a name="RFC4549">[RFC4549]</a></td>
 <td class="author-text">Melnikov, A., &ldquo;<a href="http://tools.ietf.org/html/rfc4549">Synchronization Operations for Disconnected IMAP4 Clients</a>,&rdquo; RFC&nbsp;4549, June&nbsp;2006 (<a href="http://www.rfc-editor.org/rfc/rfc4549.txt">TXT</a>).</td></tr>
 <tr><td class="author-text" valign="top"><a name="RFC5162">[RFC5162]</a></td>
 <td class="author-text">Melnikov, A., Cridland, D., and C. Wilson, &ldquo;<a href="http://tools.ietf.org/html/rfc5162">IMAP4 Extensions for Quick Mailbox Resynchronization</a>,&rdquo; RFC&nbsp;5162, March&nbsp;2008 (<a href="http://www.rfc-editor.org/rfc/rfc5162.txt">TXT</a>).</td></tr>
-<tr><td class="author-text" valign="top"><a name="RFC5234">[RFC5234]</a></td>
-<td class="author-text">Crocker, D. and P. Overell, &ldquo;<a href="http://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>,&rdquo; STD&nbsp;68, RFC&nbsp;5234, January&nbsp;2008 (<a href="http://www.rfc-editor.org/rfc/rfc5234.txt">TXT</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC5255">[RFC5255]</a></td>
+<td class="author-text">Newman, C., Gulbrandsen, A., and A. Melnikov, &ldquo;<a href="http://tools.ietf.org/html/rfc5255">Internet Message Access Protocol Internationalization</a>,&rdquo; RFC&nbsp;5255, June&nbsp;2008 (<a href="http://www.rfc-editor.org/rfc/rfc5255.txt">TXT</a>).</td></tr>
 </table>
 
 <a name="rfc.authors"></a><br /><hr />

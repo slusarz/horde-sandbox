@@ -66,17 +66,17 @@ Table of Contents
      2.2.  RESUME Command  . . . . . . . . . . . . . . . . . . . . . . 4
      2.3.  SUSPEND Response  . . . . . . . . . . . . . . . . . . . . . 5
    3.  Implementation Considerations . . . . . . . . . . . . . . . . . 5
-     3.1.  Client  . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+     3.1.  Client  . . . . . . . . . . . . . . . . . . . . . . . . . . 6
      3.2.  Server  . . . . . . . . . . . . . . . . . . . . . . . . . . 6
    4.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
    5.  Formal Syntax . . . . . . . . . . . . . . . . . . . . . . . . . 7
    6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . . . 7
    7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . 7
    8.  Security Considerations . . . . . . . . . . . . . . . . . . . . 7
-   9.  Normative References  . . . . . . . . . . . . . . . . . . . . . 7
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . . . 8
+     9.2.  Informative References  . . . . . . . . . . . . . . . . . . 8
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . . . 8
-
-
 
 
 
@@ -129,13 +129,13 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
    In response to the rise of these disconnected clients, various IMAP
    extensions have been developed to assist in accessing the remote
-   account.  [TODO: Links to LEMONDAE profile?  UIDPLUS?]  Some of these
+   account.  [TODO: Links to LEMONADE profile?  UIDPLUS?]  Some of these
    extensions, such as QRESYNC [RFC5162], require explicit action by the
    client in order to activate their features.
 
-   Additionally, advanced IMAP features have been implemented as various
-   extensions, many of which require proactive action by the client in
-   order to activate their fetures.  [TODO: Links to LANGUAGE?  NOTIFY?]
+   Additionally, other advanced IMAP features, such as the LANGUAGE
+   command [RFC5255], also require explicit activation by the client
+   [TODO: mention NOTIFY?].
 
    Finally, there is additional overhead when connecting to an IMAP
    server (e.g. entering authenticated state) because the client needs
@@ -154,7 +154,7 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
    The SUSPEND extension provides a mechanism for a client to save the
    state of an existing session and then quickly re-establish this state
-   in subsequent server accesses.
+   in subsequent server connections.
 
    An IMAP server that supports SUSPEND advertises this by including the
    word SUSPEND in its capability list.
@@ -234,9 +234,10 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    state: the suspend token could potentially include sensitive
    information and should only be sent after any security layer has been
    initiated; reasoning behind not allowing in selected state: certain
-   state commands may requir this (e.g.  ENABLE QRESYNC), and a server
-   may use some sort of "replay" system to restore the session state -
-   these commands may fail pre-existing assertions in the code]).
+   commands may require authenticated state (e.g.  ENABLE QRESYNC) - a
+   server may use some sort of "replay" system to restore the session
+   state which may cause pre-existing sanity checking/assertions in its
+   code to be triggered].
 
    If the server can successfully restore the state indicated by the
    given token, it MUST issue an tagged OK response.  This restored
@@ -269,10 +270,9 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 3.  Implementation Considerations
 
-3.1.  Client
 
-   [todo: Successfully resuming a session guarantees that the NAMESPACE
-   and CAPABILITY values of the server have not changed.  A client is
+
+
 
 
 
@@ -281,6 +281,10 @@ Slusarz                   Expires May 20, 2013                  [Page 5]
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 
+3.1.  Client
+
+   [todo: Successfully resuming a session guarantees that the NAMESPACE
+   and CAPABILITY values of the server have not changed.  A client is
    RECOMMENDED to cache these values locally.  Not sure if this is even
    needed, since it is a/the main reason to use this extension.]
 
@@ -323,12 +327,8 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
             S: * BYE Server logging out.
             S: A20 OK Logout completed and session saved.
 
-   Example 2: The client in Example 1 connects at a future time to the
-   same server and seeks to restore the previous IMAP session.  This
-   example assumes that the client has successfully completed
-   authorization to the IMAP server.
 
-             C: A1 RESUME c3RhdGUgdG9rZW4=
+
 
 
 
@@ -337,6 +337,12 @@ Slusarz                   Expires May 20, 2013                  [Page 6]
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 
+   Example 2: The client in Example 1 connects at a future time to the
+   same server and seeks to restore the previous IMAP session.  This
+   example assumes that the client has successfully completed
+   authorization to the IMAP server.
+
+             C: A1 RESUME c3RhdGUgdG9rZW4=
              S: A1 OK Angemeldet.
 
 
@@ -360,7 +366,7 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
    suspend-token =  atom
 
-   [todo: Token restricted to atom to reduce complexity]
+   [todo: Suspend token restricted to atom to reduce complexity]
 
 
 6.  IANA Considerations
@@ -379,12 +385,6 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    [RFC3501].
 
 
-9.  Normative References
-
-   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, March 1997.
-
-   [RFC2342]  Gahrns, M. and C. Newman, "IMAP4 Namespace", RFC 2342,
 
 
 
@@ -393,10 +393,23 @@ Slusarz                   Expires May 20, 2013                  [Page 7]
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 
-              May 1998.
+9.  References
+
+9.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
 
    [RFC3501]  Crispin, M., "INTERNET MESSAGE ACCESS PROTOCOL - VERSION
               4rev1", RFC 3501, March 2003.
+
+   [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
+              Specifications: ABNF", STD 68, RFC 5234, January 2008.
+
+9.2.  Informative References
+
+   [RFC2342]  Gahrns, M. and C. Newman, "IMAP4 Namespace", RFC 2342,
+              May 1998.
 
    [RFC4549]  Melnikov, A., "Synchronization Operations for Disconnected
               IMAP4 Clients", RFC 4549, June 2006.
@@ -405,8 +418,9 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
               Extensions for Quick Mailbox Resynchronization", RFC 5162,
               March 2008.
 
-   [RFC5234]  Crocker, D. and P. Overell, "Augmented BNF for Syntax
-              Specifications: ABNF", STD 68, RFC 5234, January 2008.
+   [RFC5255]  Newman, C., Gulbrandsen, A., and A. Melnikov, "Internet
+              Message Access Protocol Internationalization", RFC 5255,
+              June 2008.
 
 
 Author's Address
@@ -417,20 +431,6 @@ Author's Address
    USA
 
    Email: slusarz@horde.org
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
