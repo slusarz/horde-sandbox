@@ -47,9 +47,9 @@
 
     <abstract>
       <t>This document defines the SUSPEND extension for the IMAP protocol.
-      It provides a method for a client to save the current state of an
-      IMAP session and then quickly restore this state in a subsequent
-      session.</t>
+      It provides a method for a client to save the current configuration
+      state of an IMAP session and then quickly restore this configuration
+      in a subsequent session.</t>
     </abstract>
   </front>
 
@@ -75,9 +75,10 @@
       require explicit action by the client in order to activate their
       features.</t>
 
-      <t>Additionally, other advanced IMAP features, such as the <xref
-      target="RFC5255">LANGUAGE command</xref>, also require explicit
-      activation by the client [TODO: mention NOTIFY?].</t>
+      <t>Other advanced IMAP features, such as the
+      <xref target="RFC5255">LANGUAGE command</xref>, also require explicit
+      configuration by the client and is forgotten when the client logs out
+      of the server [TODO: mention NOTIFY?].</t>
 
       <t>Finally, there is additional overhead when connecting to an
       IMAP server (e.g. entering authenticated state) because the client
@@ -96,8 +97,8 @@
       and confgure them on every access.</t>
 
       <t>The SUSPEND extension provides a mechanism for a client to save
-      the state of an existing session and then quickly re-establish
-      this state in subsequent server connections.</t>
+      the configuration state of an existing session and then quickly
+      re-establish this configuration in subsequent server connections.</t>
 
       <t>An IMAP server that supports SUSPEND advertises this by including
       the word SUSPEND in its capability list.</t>
@@ -129,16 +130,16 @@
         <xref target="RFC3501"/> is issued. The SUSPEND command extends
         the LOGOUT command by indicating to the server that, in addition
         to closing the network connection, the client also requests that
-        the current connection state be saved.</t>
+        the current configuration state be saved.</t>
 
-        <t>If the current IMAP session state can be saved, an untagged SUSPEND
-        response (see <xref target="suspend-response"/>) MUST be issued. If
-        the server cannot save the current state, a SUSPEND response MUST NOT
-        be issued.</t>
+        <t>If the current IMAP configuration state can be saved, an untagged
+        SUSPEND response (see <xref target="suspend-response"/>) MUST be
+        issued. If the server cannot save the current state, a SUSPEND
+        response MUST NOT be issued.</t>
 
         <t>Like the LOGOUT command, a server MUST send a BYE untagged response
-        before the (tagged) OK response, and then close the network connection.
-        </t>
+        before the (tagged) OK response, and then close the network
+        connection.</t>
       </section>
 
       <section anchor="resume-command" title="RESUME Command">
@@ -203,8 +204,7 @@
 
         <t>The SUSPEND response occurs as a result of a SUSPEND command.
         The suspend token is a server-specific representation of the current
-        state in the IMAP session (with the exception of the currently
-        selected mailbox).</t>
+        configuration state of the IMAP session.</t>
 
         <t>[todo: A suspend token MUST become invalid if either the NAMESPACE
         or CAPABILITY configuration of the server changes.</t>
