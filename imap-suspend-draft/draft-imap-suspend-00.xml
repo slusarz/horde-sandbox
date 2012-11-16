@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC2342 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2342.xml">
+<!ENTITY RFC3501 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3501.xml">
+<!ENTITY RFC4549 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4549.xml">
+<!ENTITY RFC5162 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5162.xml">
+<!ENTITY RFC5234 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5234.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc category="std" docName="draft-imap-suspend-00" ipr="trust200902">
+  <front>
+    <title>IMAP SUSPEND Extension</title>
+
+    <author fullname="Michael M. Slusarz" initials="M.M." surname="Slusarz">
+      <organization>Horde LLC</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city>Denver</city>
+          <region>Colorado</region>
+          <code></code>
+          <country>USA</country>
+        </postal>
+        <email>slusarz@horde.org</email>
+      </address>
+    </author>
+
+    <date month="November" year="2012" />
+
+    <area>General</area>
+    <workgroup>IETF</workgroup>
+
+    <keyword>IMAP</keyword>
+    <keyword>SUSPEND</keyword>
+    <keyword>RESUME</keyword>
+    <keyword>disconnected</keyword>
+
+    <abstract>
+      <t>This document defines the SUSPEND extension for the IMAP protocol.
+      It provides a method for a client to save the current state of an
+      IMAP session and then quickly restore this state in a subsequent
+      session.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>[TODO: Reorganize this section. Disconnected talk should probably
+      go lower in section, after talk about activating extensions.]</t>
+
+      <t>The original IMAP4rev1 <xref target="RFC3501" />
+      protocol specification was primarily designed to be used by clients
+      that remain connected to the IMAP server for extended periods of
+      time. Since that time, "disconnected" IMAP clients
+      <xref target="RFC4549" /> have become increasingly popular and
+      numerous, due to the rise in, for example, portable devices that
+      do not maintain persistent connections to the remove server, or for
+      which keeping an active connection is expensive (in terms of
+      computing and/or power).</t>
+
+      <t>In response to the rise of these disconnected clients, various
+      IMAP extensions have been developed to assist in accessing the
+      remote account. [TODO: Links to LEMONDAE profile? UIDPLUS?] Some
+      of these extensions, such as <xref target="RFC5162">QRESYNC</xref>,
+      require explicit action by the client in order to activate their
+      features.</t>
+
+      <t>Additionally, advanced IMAP features have been implemented as
+      various extensions, many of which require proactive action by the
+      client in order to activate their fetures. [TODO: Links to
+      LANGUAGE? NOTIFY?]</t>
+
+      <t>Finally, there is additional overhead when connecting to an
+      IMAP server (e.g. entering authenticated state) because the client
+      needs to do things like determine the capabilities of the remote
+      server (<xref target="RFC3501">CAPABILITY command</xref>) and, if
+      available, to obtain the namespace layout for the mailboxes
+      (<xref target="RFC2342">NAMESPACE command</xref>).</t>
+
+      <t>Therefore, a disconnected client still faces the (potentially
+      substantial) overhead of needing to perform various initialization
+      initialization tasks before the client can begin to do "useful"
+      work from the perspective of the end user (e.g. listing mailboxes
+      accessing messages). For clients that are unable to maintain a
+      persistent connection the server, many of the gains provided by
+      the advanced IMAP extensions are offset by the overhead to enable
+      and confgure them on every access.</t>
+
+      <t>The SUSPEND extension provides a mechanism for a client to save
+      the state of an existing session and then quickly re-establish
+      this state in subsequent server accesses.</t>
+
+      <t>An IMAP server that supports SUSPEND advertises this by including
+      the word SUSPEND in its capability list.</t>
+
+      <section title="Requirements Language">
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+        "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+        document are to be interpreted as described in <xref
+        target="RFC2119">RFC 2119</xref>.</t>
+      </section>
+    </section>
+
+    <section title="IMAP Protocol Changes">
+      <section anchor="suspend-command" title="SUSPEND Command">
+        <t>
+          <list style="hanging" hangIndent="12">
+            <t hangText="Arguments:">none</t>
+            <t hangText="Responses:">REQUIRED untagged response: BYE<vspace />
+              OPTIONAL untagged response: SUSPEND</t>
+            <t hangText="Result:">OK - logout completed<vspace />
+              BAD - command unknown or arguments invalid
+            </t>
+          </list>
+        </t>
+
+        <t>This section defines a new SUSPEND command.</t>
+
+        <t>To close the connection with the server, the LOGOUT command
+        <xref target="RFC3501" /> is issued. The SUSPEND command extends
+        the LOGOUT command by indicating to the server that, in addition
+        to closing the network connection, the client also requests that
+        the current connection state be saved.</t>
+
+        <t>If the current IMAP session state can be saved, an untagged SUSPEND
+        response (see <xref target="suspend-response" />) MUST be issued. If
+        the server cannot save the current state, a SUSPEND response MUST NOT
+        be issued.</t>
+
+        <t>Like the LOGOUT command, a server MUST send a BYE untagged response
+        before the (tagged) OK response, and then close the network connection.
+        </t>
+      </section>
+
+      <section anchor="resume-command" title="RESUME Command">
+        <t>
+          <list style="hanging" hangIndent="12">
+            <t hangText="Arguments:">suspend token</t>
+            <t hangText="Responses:">no specific responses for this command</t>
+            <t hangText="Result:">OK - state successfully restored<vspace />
+              NO - error: state could not be restored<vspace />
+              BAD - command unknown or arguments invalid
+            </t>
+          </list>
+        </t>
+
+        <t>This section defines a new RESUME command.</t>
+
+        <t>This command is used when a client desires to restore the session
+        state represented by a token previously generated by the server.</t>
+
+        <t>The RESUME command MUST only be issued in the IMAP authenticated
+        state. If the RESUME command is issued in either the not authenticated
+        state or the selected state, a BAD tagged response MUST be sent.
+        [todo: reasoning behind not allowing in not authenticated state: the
+        suspend token could potentially include sensitive information and should
+        only be sent after any security layer has been initiated; reasoning
+        behind not allowing in selected state: certain state commands may
+        requir this (e.g. ENABLE QRESYNC), and a server may use some sort of
+        "replay" system to restore the session state - these commands may
+        fail pre-existing assertions in the code]).</t>
+
+        <t>If the server can successfully restore the state indicated by
+        the given token, it MUST issue an tagged OK response. This restored
+        session MUST be identical to the state at the time the SUSPEND command
+        that issued the token was issued. After a successful RESUME command,
+        the connection MUST be in the authenticated state (i.e. no mailbox
+        is selected).</t>
+
+        <t>If the server can not restore the state, it MUST issue a tagged
+        NO response.</t>
+      </section>
+
+      <section anchor="suspend-response" title="SUSPEND Response">
+        <t>
+          <list style="hanging" hangIndent="12">
+            <t hangText="Contents:">suspend token</t>
+          </list>
+        </t>
+
+        <t>The SUSPEND response occurs as a result of a SUSPEND command.
+        The suspend token is a server-specific representation of the current
+        state in the IMAP session (with the exception of the currently
+        selected mailbox).</t>
+
+        <t>[todo: A suspend token MUST become invalid if either the NAMESPACE
+        or CAPABILITY configuration of the server changes.</t>
+
+        <t>It is RECOMMENDED that the suspend token contain a versioning
+        mechanism that would cause the token to be unsuccessful in restoring
+        state if the internal state storage mechanism in the server changes.
+        However, interpretation of the contents or format of the suspend token
+        is left entirely to the server implementor.</t>
+      </section>
+    </section>
+
+    <section title="Implementation Considerations">
+      <section title="Client">
+        <t>[todo: Successfully resuming a session guarantees that the
+        NAMESPACE and CAPABILITY values of the server have not changed. A
+        client is RECOMMENDED to cache these values locally. Not sure if
+        this is even needed, since it is a/the main reason to use this
+        extension.]</t>
+      </section>
+
+      <section title="Server">
+        <t>[todo: If a client successfully resumes the session, the client
+        SHOULD use its cached CAPABILITY value to determine the server's
+        capabilities. Therefore, sending CAPABILITY information after the client
+        is authenticated is a waste of bandwidth and processing power. Several
+        servers automatically issue an untagged CAPABILITY response after a
+        client enters the authenticated state. If the SUSPEND extension is
+        implemented, a server SHOULD NOT automatically issue this data.]</t>
+      </section>
+    </section>
+
+    <section title="Examples">
+      <figure>
+        <preamble>
+          Example 1: A client connects to a server and does not have a
+          prior saved suspend token. The client verifies that the server
+          supports the SUSPEND extension, performs its initialization, and
+          obtains a suspend token. This example assumes that the client has
+          successfully completed authorization to the IMAP server.
+        </preamble>
+        <artwork>
+          C: A1 CAPABILITY
+          S: * CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1 SUSPEND
+          S: A1 OK Capability command completed.
+          C: A2 ENABLE QRESYNC
+          S: * ENABLED QRESYNC
+          S: A2 OK Enable command completed.
+          C: A3 LANGUAGE DE
+          S: * LANGUAGE (DE)
+          S: * NAMESPACE (("" "/")) (("Other Users/" "/"
+               "TRANSLATION" ("Andere Ben&amp;APw-tzer/")))
+               (("Public Folders/" "/" "TRANSLATION"
+               ("Gemeinsame Postf&amp;AM8-cher/")))
+          S: A3 Sprachwechsel durch LANGUAGE-Befehl ausgefuehrt
+          [...]
+          C: A20 SUSPEND
+          S: * SUSPEND c3RhdGUgdG9rZW4=
+          S: * BYE Server logging out.
+          S: A20 OK Logout completed and session saved.
+        </artwork>
+      </figure>
+
+      <figure>
+        <preamble>
+          Example 2: The client in Example 1 connects at a future time to
+          the same server and seeks to restore the previous IMAP session.
+          This example assumes that the client has successfully completed
+          authorization to the IMAP server.
+        </preamble>
+        <artwork>
+          C: A1 RESUME c3RhdGUgdG9rZW4=
+          S: A1 OK Angemeldet.
+        </artwork>
+      </figure>
+    </section>
+
+    <section anchor="syntax" title="Formal Syntax">
+      <t>
+        The following syntax specification uses the Augmented Backus-Naur
+        Form (ABNF) as described in <xref target="RFC5234"/>.
+        Terms not defined here are taken from <xref target="RFC3501"/>.
+      </t>
+
+      <t>
+        <list style="hanging" hangIndent="8">
+          <t hangText="capability =/">"SUSPEND"</t>
+          <t hangText="command-auth =/">resume / suspend</t>
+          <t hangText="response-data =/">"*" SP suspend-response CRLF</t>
+          <t hangText="resume =">"RESUME" SP suspend-token</t>
+          <t hangText="suspend =">"SUSPEND"</t>
+          <t hangText="suspend-response =">"SUSPEND" SP suspend-token</t>
+          <t hangText="suspend-token =">atom</t>
+        </list>
+      </t>
+
+      <t>[todo: Token restricted to atom to reduce complexity]</t>
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>The IANA is requested to add SUSPEND to the "IMAP 4 Capabilities"
+      registry, http://www.iana.org/assignments/imap4-capabilities.</t>
+    </section>
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t></t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>It is believed that this extension doesn't add any security
+      considerations that are not already present in the base IMAP
+      protocol <xref target="RFC3501" />.</t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      &RFC2119;
+      &RFC2342;
+      &RFC3501;
+      &RFC4549;
+      &RFC5162;
+      &RFC5234;
+    </references>
+  </back>
+</rfc>
