@@ -3,8 +3,8 @@
 
 IETF                                                          M. Slusarz
 Internet-Draft                                                 Horde LLC
-Intended status: Standards Track                       November 16, 2012
-Expires: May 20, 2013
+Intended status: Standards Track                       November 17, 2012
+Expires: May 21, 2013
 
 
                          IMAP SUSPEND Extension
@@ -13,9 +13,9 @@ Expires: May 20, 2013
 Abstract
 
    This document defines the SUSPEND extension for the IMAP protocol.
-   It provides a method for a client to save the current state of an
-   IMAP session and then quickly restore this state in a subsequent
-   session.
+   It provides a method for a client to save the current configuration
+   state of an IMAP session and then quickly restore this configuration
+   in a subsequent session.
 
 Status of this Memo
 
@@ -32,7 +32,7 @@ Status of this Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 20, 2013.
+   This Internet-Draft will expire on May 21, 2013.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-Slusarz                   Expires May 20, 2013                  [Page 1]
+Slusarz                   Expires May 21, 2013                  [Page 1]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
@@ -65,18 +65,19 @@ Table of Contents
      2.1.  SUSPEND Command . . . . . . . . . . . . . . . . . . . . . . 4
      2.2.  RESUME Command  . . . . . . . . . . . . . . . . . . . . . . 4
      2.3.  SUSPEND Response  . . . . . . . . . . . . . . . . . . . . . 5
-   3.  Implementation Considerations . . . . . . . . . . . . . . . . . 5
+     2.4.  RESUME Response Code  . . . . . . . . . . . . . . . . . . . 6
+   3.  Implementation Considerations . . . . . . . . . . . . . . . . . 6
      3.1.  Client  . . . . . . . . . . . . . . . . . . . . . . . . . . 6
      3.2.  Server  . . . . . . . . . . . . . . . . . . . . . . . . . . 6
-   4.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
-   5.  Formal Syntax . . . . . . . . . . . . . . . . . . . . . . . . . 7
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . . . 7
-   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . 7
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . . . 7
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . . . 8
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . . . 8
-     9.2.  Informative References  . . . . . . . . . . . . . . . . . . 8
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . . . 8
+   4.  Examples  . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+   5.  Formal Syntax . . . . . . . . . . . . . . . . . . . . . . . . . 8
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . . . 8
+   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . 8
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . . . 8
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . . . 9
+     9.2.  Informative References  . . . . . . . . . . . . . . . . . . 9
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . . . 9
 
 
 
@@ -107,8 +108,7 @@ Table of Contents
 
 
 
-
-Slusarz                   Expires May 20, 2013                  [Page 2]
+Slusarz                   Expires May 21, 2013                  [Page 2]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
@@ -133,9 +133,9 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    extensions, such as QRESYNC [RFC5162], require explicit action by the
    client in order to activate their features.
 
-   Additionally, other advanced IMAP features, such as the LANGUAGE
-   command [RFC5255], also require explicit activation by the client
-   [TODO: mention NOTIFY?].
+   Other advanced IMAP features, such as the LANGUAGE command [RFC5255],
+   also require explicit configuration by the client and is forgotten
+   when the client logs out of the server [TODO: mention NOTIFY?].
 
    Finally, there is additional overhead when connecting to an IMAP
    server (e.g. entering authenticated state) because the client needs
@@ -153,8 +153,8 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    confgure them on every access.
 
    The SUSPEND extension provides a mechanism for a client to save the
-   state of an existing session and then quickly re-establish this state
-   in subsequent server connections.
+   configuration state of an existing session and then quickly re-
+   establish this configuration in subsequent server connections.
 
    An IMAP server that supports SUSPEND advertises this by including the
    word SUSPEND in its capability list.
@@ -164,7 +164,7 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 
 
-Slusarz                   Expires May 20, 2013                  [Page 3]
+Slusarz                   Expires May 21, 2013                  [Page 3]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
@@ -174,6 +174,11 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
+
+   In examples, lines beginning with "S:" are sent by the IMAP server,
+   and lines beginning with "C:" are sent by the client.  Line breaks
+   may appear in example commands solely for editorial clarity; when
+   present in the actual message, they are represented by "CRLF".
 
 
 2.  IMAP Protocol Changes
@@ -193,12 +198,12 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    To close the connection with the server, the LOGOUT command [RFC3501]
    is issued.  The SUSPEND command extends the LOGOUT command by
    indicating to the server that, in addition to closing the network
-   connection, the client also requests that the current connection
+   connection, the client also requests that the current configuration
    state be saved.
 
-   If the current IMAP session state can be saved, an untagged SUSPEND
-   response (see Section 2.3) MUST be issued.  If the server cannot save
-   the current state, a SUSPEND response MUST NOT be issued.
+   If the current IMAP configuration state can be saved, an untagged
+   SUSPEND response (see Section 2.3) MUST be issued.  If the server
+   cannot save the current state, a SUSPEND response MUST NOT be issued.
 
    Like the LOGOUT command, a server MUST send a BYE untagged response
    before the (tagged) OK response, and then close the network
@@ -208,36 +213,50 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
    Arguments:  suspend token
 
-   Responses:  no specific responses for this command
-
-   Result:     OK - state successfully restored
-               NO - error: state could not be restored
-               BAD - command unknown or arguments invalid
-
-   This section defines a new RESUME command.
-
-   This command is used when a client desires to restore the session
+   Responses:  no specific response for this command
 
 
 
-Slusarz                   Expires May 20, 2013                  [Page 4]
+
+
+
+Slusarz                   Expires May 21, 2013                  [Page 4]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 
-   state represented by a token previously generated by the server.
+   Result:     OK - suspend token is valid
+               NO - suspend token is invalid
+               BAD - command unknown or arguments invalid
 
-   The RESUME command MUST only be issued in the IMAP authenticated
-   state.  If the RESUME command is issued in either the not
-   authenticated state or the selected state, a BAD tagged response MUST
-   be sent. [todo: reasoning behind not allowing in not authenticated
-   state: the suspend token could potentially include sensitive
-   information and should only be sent after any security layer has been
-   initiated; reasoning behind not allowing in selected state: certain
-   commands may require authenticated state (e.g.  ENABLE QRESYNC) - a
-   server may use some sort of "replay" system to restore the session
-   state which may cause pre-existing sanity checking/assertions in its
-   code to be triggered].
+   This section defines a new RESUME command.
+
+   This command is used when a client desires to restore the
+   configuration state represented by a token previously generated by
+   the server.
+
+   The RESUME command MUST only be issued in either the not
+   authenticated state or in the authenticated state.  If the RESUME
+   command is issued in the selected state, a BAD tagged response MUST
+   be sent.
+
+   If the command is sent in the not authenticated state, the client is
+   indicating that it desires the restore the configuration state
+   represented by the token after authentication is completed.  If the
+   command is issued in the authenticated state, the client is
+   requesting that the current IMAP configuration be immediately
+   switched to the configuration state indicated by the token.
+
+   If issued in the not authenticated state, the RESUME command SHOULD
+   NOT be issued until the TLS [RFC5246] layer has been negotiated.
+
+   If the token is invalid or has expired, the RESUME command MUST
+   return a tagged NO response.
+
+   If the token is valid, the RESUME command MUST return a tagged OK
+   response.  This does NOT mean that the configuration state has been
+   restored; that only occurs after the server issues a RESUME response
+   code (see Section 2.4).
 
    If the server can successfully restore the state indicated by the
    given token, it MUST issue an tagged OK response.  This restored
@@ -246,20 +265,24 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    command, the connection MUST be in the authenticated state (i.e. no
    mailbox is selected).
 
-   If the server can not restore the state, it MUST issue a tagged NO
-   response.
-
 2.3.  SUSPEND Response
 
    Contents:   suspend token
 
    The SUSPEND response occurs as a result of a SUSPEND command.  The
    suspend token is a server-specific representation of the current
-   state in the IMAP session (with the exception of the currently
-   selected mailbox).
+   configuration state of the IMAP session.
+
+
+
+
+Slusarz                   Expires May 21, 2013                  [Page 5]
+
+Internet-Draft           IMAP SUSPEND Extension            November 2012
+
 
    [todo: A suspend token MUST become invalid if either the NAMESPACE or
-   CAPABILITY configuration of the server changes.
+   CAPABILITY configuration of the server changes.]
 
    It is RECOMMENDED that the suspend token contain a versioning
    mechanism that would cause the token to be unsuccessful in restoring
@@ -267,19 +290,25 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    However, interpretation of the contents or format of the suspend
    token is left entirely to the server implementor.
 
+2.4.  RESUME Response Code
+
+   This section defines a new RESUME response code:
+
+      OK [RESUME <suspend-token>]
+
+      where <suspend-token> is the token identifier associated with the
+      configuration state that was restored.
+
+   If a client issued a successful RESUME command in the not
+   authenticated state, this response code MUST be issued in response to
+   the authentication command.
+
+   If a client issued a successful RESUME command in the authenticated
+   state, this response code MUST be issued in the response to the
+   RESUME command.
+
 
 3.  Implementation Considerations
-
-
-
-
-
-
-
-Slusarz                   Expires May 20, 2013                  [Page 5]
-
-Internet-Draft           IMAP SUSPEND Extension            November 2012
-
 
 3.1.  Client
 
@@ -290,60 +319,84 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 3.2.  Server
 
-   [todo: If a client successfully resumes the session, the client
-   SHOULD use its cached CAPABILITY value to determine the server's
-   capabilities.  Therefore, sending CAPABILITY information after the
-   client is authenticated is a waste of bandwidth and processing power.
-   Several servers automatically issue an untagged CAPABILITY response
-   after a client enters the authenticated state.  If the SUSPEND
-   extension is implemented, a server SHOULD NOT automatically issue
-   this data.]
-
-
-4.  Examples
-
-   Example 1: A client connects to a server and does not have a prior
-   saved suspend token.  The client verifies that the server supports
-   the SUSPEND extension, performs its initialization, and obtains a
-   suspend token.  This example assumes that the client has successfully
-   completed authorization to the IMAP server.
-
-            C: A1 CAPABILITY
-            S: * CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1 SUSPEND
-            S: A1 OK Capability command completed.
-            C: A2 ENABLE QRESYNC
-            S: * ENABLED QRESYNC
-            S: A2 OK Enable command completed.
-            C: A3 LANGUAGE DE
-            S: * LANGUAGE (DE)
-            S: * NAMESPACE (("" "/")) (("Other Users/" "/"
-                 "TRANSLATION" ("Andere Ben&APw-tzer/")))
-                 (("Public Folders/" "/" "TRANSLATION"
-                 ("Gemeinsame Postf&AM8-cher/")))
-            S: A3 Sprachwechsel durch LANGUAGE-Befehl ausgefuehrt
-            [...]
-            C: A20 SUSPEND
-            S: * SUSPEND c3RhdGUgdG9rZW4=
-            S: * BYE Server logging out.
-            S: A20 OK Logout completed and session saved.
+   If a session is successfully resumed via a RESUME command issued
+   before authentication, the client is assumed to be using a cached
+   version of the CAPABILITY list.  Therefore, a server SHOULD NOT
+   automatically issue a CAPABILITY response code as a result of the
+   authentication command since the client will already have this
+   information.
 
 
 
 
 
 
-Slusarz                   Expires May 20, 2013                  [Page 6]
+
+Slusarz                   Expires May 21, 2013                  [Page 6]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 
-   Example 2: The client in Example 1 connects at a future time to the
-   same server and seeks to restore the previous IMAP session.  This
-   example assumes that the client has successfully completed
-   authorization to the IMAP server.
+4.  Examples
 
-             C: A1 RESUME c3RhdGUgdG9rZW4=
-             S: A1 OK Angemeldet.
+   Example 1: A client connects to a server and does not have a saved
+   suspend token.  The client verifies that the server supports the the
+   SUSPEND extension, performs its initialization, and obtains a suspend
+   token.
+
+      <Client successfully authenticates to server> C: A1 CAPABILITY
+      S: * CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1 SUSPEND
+      S: A1 OK Capability command completed.
+      C: A2 ENABLE QRESYNC
+      S: * ENABLED QRESYNC
+      S: A2 OK Enable command completed.
+      C: A3 LANGUAGE DE
+      S: * LANGUAGE (DE)
+      S: * NAMESPACE (("" "/")) (("Other Users/" "/"
+           "TRANSLATION" ("Andere Ben&APw-tzer/")))
+           (("Public Folders/" "/" "TRANSLATION"
+           ("Gemeinsame Postf&AM8-cher/")))
+      S: A3 Sprachwechsel durch LANGUAGE-Befehl ausgefuehrt
+      [...]
+      C: A20 SUSPEND
+      S: * SUSPEND c3RhdGUgdG9rZW4=
+      S: * BYE Server logging out.
+      S: A20 OK Logout completed.
+
+   Example 2: The client in Example 1 connects at a future time to the
+   same server and seeks to restore the previous IMAP session.
+
+      C: * OK [CAPABILITY IMAP4rev1 STARTTLS LOGINDISABLED SUSPEND]
+      C: A1 STARTTLS
+      S: A1 OK Being TLS negotiation now.
+      <TLS negotiation, further commands are under TLS [RFC5246] layer>
+      C: A2 CAPABILITY
+      S: * CAPABILITY IMAP4rev1 AUTH=PLAIN SUSPEND
+      S: A2 OK CAPABILITY completed.
+      C: A3 RESUME c3RhdGUgdG9rZW4=
+      S: A3 OK Suspend token valid.
+      C: A4 LOGIN joe passwd
+      S: A4 OK [RESUME c3RhdGUgdG9rZW4=] LOGIN completed and
+            configuration restored.
+
+   Example 3: The client in Example 1 connects at a future time to the
+   same server and seeks to restore the previous IMAP session.  In this
+   example, the connection was pre-authenticated so the RESUME command
+   is issued in the authenticated state.
+
+
+
+
+
+Slusarz                   Expires May 21, 2013                  [Page 7]
+
+Internet-Draft           IMAP SUSPEND Extension            November 2012
+
+
+      S: * PREAUTH [CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1
+           SUSPEND]
+      C: A1 RESUME c3RhdGUgdG9rZW4=
+      S: A1 OK [RESUME c3RhdGUgdG9rZW4=] Configuration restored.
 
 
 5.  Formal Syntax
@@ -352,21 +405,23 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    Form (ABNF) as described in [RFC5234].  Terms not defined here are
    taken from [RFC3501].
 
-   capability =/  "SUSPEND"
 
-   command-auth =/  resume / suspend
 
-   response-data =/  "*" SP suspend-response CRLF
+      capability =/  "SUSPEND"
 
-   resume =  "RESUME" SP suspend-token
+      command-auth =/  resume / suspend
 
-   suspend =  "SUSPEND"
+      response-data =/  "*" SP suspend-response CRLF
 
-   suspend-response =  "SUSPEND" SP suspend-token
+      resp-text-code =/  "RESUME" SP suspend-token
 
-   suspend-token =  atom
+      resume =  "RESUME" SP suspend-token
 
-   [todo: Suspend token restricted to atom to reduce complexity]
+      suspend =  "SUSPEND"
+
+      suspend-response =  "SUSPEND" SP suspend-token
+
+      suspend-token =  atom
 
 
 6.  IANA Considerations
@@ -385,15 +440,14 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    [RFC3501].
 
 
+9.  References
 
 
 
-Slusarz                   Expires May 20, 2013                  [Page 7]
+Slusarz                   Expires May 21, 2013                  [Page 8]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
-
-9.  References
 
 9.1.  Normative References
 
@@ -417,6 +471,9 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    [RFC5162]  Melnikov, A., Cridland, D., and C. Wilson, "IMAP4
               Extensions for Quick Mailbox Resynchronization", RFC 5162,
               March 2008.
+
+   [RFC5246]  Dierks, T. and E. Rescorla, "The Transport Layer Security
+              (TLS) Protocol Version 1.2", RFC 5246, August 2008.
 
    [RFC5255]  Newman, C., Gulbrandsen, A., and A. Melnikov, "Internet
               Message Access Protocol Internationalization", RFC 5255,
@@ -443,6 +500,5 @@ Author's Address
 
 
 
-
-Slusarz                   Expires May 20, 2013                  [Page 8]
+Slusarz                   Expires May 21, 2013                  [Page 9]
 
