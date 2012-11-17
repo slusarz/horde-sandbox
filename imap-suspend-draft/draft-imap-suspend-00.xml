@@ -364,9 +364,15 @@
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>It is believed that this extension doesn't add any security
-      considerations that are not already present in the base IMAP
-      protocol <xref target="RFC3501"/>.</t>
+      <t>Depending on the server implementation of the suspend token, this
+      item may provide details on IMAP commands issued by the client while
+      authenticated. To protect these details, <xref target="resume-command" />
+      indicates that the suspend token SHOULD NOT be output to the server
+      until the TLS negotiation is complete.</t>
+
+      <t>Otherwise, it is believed that this extension doesn't add any
+      security considerations that are not already present in the base
+      IMAP protocol <xref target="RFC3501"/>.</t>
     </section>
   </middle>
 
