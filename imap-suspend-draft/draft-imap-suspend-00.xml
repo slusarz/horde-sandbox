@@ -173,7 +173,7 @@
         configuration state indicated by the token.</t>
 
         <t>If issued in the not authenticated state, the RESUME command SHOULD
-        NOT be issued until the [<xref target="RFC5246">TLS</xref>] layer has
+        NOT be issued until the <xref target="RFC5246">TLS</xref> layer has
         been negotiated.</t>
 
         <t>If the token is invalid or has expired, the RESUME command MUST
@@ -207,7 +207,7 @@
         configuration state of the IMAP session.</t>
 
         <t>[todo: A suspend token MUST become invalid if either the NAMESPACE
-        or CAPABILITY configuration of the server changes.</t>
+        or CAPABILITY configuration of the server changes.]</t>
 
         <t>It is RECOMMENDED that the suspend token contain a versioning
         mechanism that would cause the token to be unsuccessful in restoring
@@ -217,24 +217,23 @@
       </section>
 
       <section anchor="resume-responsecode" title="RESUME Response Code">
-        <t>This section defines a new RESUME response code:</t>
+        <t>This section defines a new RESUME response code:
 
-        <figure>
-          <artwork>
-            OK [RESUME &lt;suspend-token&gt;]
+          <list style="empty">
+            <t>OK [RESUME &lt;suspend-token&gt;]</t>
 
-            where &lt;suspend-token&gt; is the token identifier associated
-            with the configuration state that was restored.
-          </artwork>
-        </figure>
+            <t>where &lt;suspend-token&gt; is the token identifier associated
+            with the configuration state that was restored.</t>
+          </list>
+        </t>
 
         <t>If a client issued a successful RESUME command in the not
-        authenticated state, this response code MUST be issued in an untagged
-        response to the authentication command.</t>
+         authenticated state, this response code MUST be issued in response to
+         the authentication command.</t>
 
         <t>If a client issued a successful RESUME command in the authenticated
-        state, this response code MUST be issued in the tagged OK response
-        to the RESUME command.</t>
+        state, this response code MUST be issued in the response to the RESUME
+        command.</t>
       </section>
     </section>
 
@@ -258,74 +257,74 @@
     </section>
 
     <section title="Examples">
-      <figure>
-        <preamble>
-          Example 1: A client connects to a server and does not have a saved
-          suspend token. The client verifies that the server supports the
-          the SUSPEND extension, performs its initialization, and obtains
-          a suspend token. This example assumes that the client has
-          successfully completed authorization to the IMAP server.
-        </preamble>
-        <artwork>
-          C: A1 CAPABILITY
-          S: * CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1 SUSPEND
-          S: A1 OK Capability command completed.
-          C: A2 ENABLE QRESYNC
-          S: * ENABLED QRESYNC
-          S: A2 OK Enable command completed.
-          C: A3 LANGUAGE DE
-          S: * LANGUAGE (DE)
-          S: * NAMESPACE (("" "/")) (("Other Users/" "/"
-               "TRANSLATION" ("Andere Ben&amp;APw-tzer/")))
-               (("Public Folders/" "/" "TRANSLATION"
-               ("Gemeinsame Postf&amp;AM8-cher/")))
-          S: A3 Sprachwechsel durch LANGUAGE-Befehl ausgefuehrt
-          [...]
-          C: A20 SUSPEND
-          S: * SUSPEND c3RhdGUgdG9rZW4=
-          S: * BYE Server logging out.
-          S: A20 OK Logout completed and session saved.
-        </artwork>
-      </figure>
+      <t>
+        Example 1: A client connects to a server and does not have a saved
+        suspend token. The client verifies that the server supports the
+        the SUSPEND extension, performs its initialization, and obtains
+        a suspend token.
 
-      <figure>
-        <preamble>
-          Example 2: The client in Example 1 connects at a future time to
-          the same server and seeks to restore the previous IMAP session.
-        </preamble>
-        <artwork>
-          C: * OK [CAPABILITY IMAP4rev1 STARTTLS LOGINDISABLED SUSPEND]
-          C: A1 STARTTLS
-          S: A1 OK Being TLS negotiation now.
-          &lt;TLS negotiation, further commands are under [
-          <xref target="RFC5246">TLS</xref>] layer&gt;
-          C: A2 CAPABILITY
-          S: * CAPABILITY IMAP4rev1 AUTH=PLAIN SUSPEND
-          S: A2 OK CAPABILITY completed.
-          C: A3 RESUME c3RhdGUgdG9rZW4=
-          S: A3 OK Configuration will be attempted to be restored.
-          C: A4 LOGIN joe passwd
-          S: * OK [RESUME c3RhdGUgdG9rZW4=] Configuration restored.
-          S: A4 OK LOGIN completed.
-        </artwork>
-      </figure>
+        <list style="empty">
+          <t>
+            &lt;Client successfully authenticates to server&gt;
+            C: A1 CAPABILITY<vspace/>
+            S: * CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1 SUSPEND<vspace/>
+            S: A1 OK Capability command completed.<vspace/>
+            C: A2 ENABLE QRESYNC<vspace/>
+            S: * ENABLED QRESYNC<vspace/>
+            S: A2 OK Enable command completed.<vspace/>
+            C: A3 LANGUAGE DE<vspace/>
+            S: * LANGUAGE (DE)<vspace/>
+            S: * NAMESPACE (("" "/")) (("Other Users/" "/"<vspace/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"TRANSLATION" ("Andere Ben&amp;APw-tzer/")))<vspace/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(("Public Folders/" "/" "TRANSLATION"<vspace/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;("Gemeinsame Postf&amp;AM8-cher/")))<vspace/>
+            S: A3 Sprachwechsel durch LANGUAGE-Befehl ausgefuehrt<vspace/>
+            [...]<vspace/>
+            C: A20 SUSPEND<vspace/>
+            S: * SUSPEND c3RhdGUgdG9rZW4=<vspace/>
+            S: * BYE Server logging out.<vspace/>
+            S: A20 OK Logout completed.
+          </t>
+        </list>
+      </t>
 
-      <figure>
-        <preamble>
-          Example 3: The client in Example 1 connects at a future time to
-          the same server and seeks to restore the previous IMAP session. In
-          this example, the connection was pre-authenticated so the RESUME
-          command is issued in the authenticated state.
-        </preamble>
-        <artwork>
-          S: * PREAUTH
-          C: A1 CAPABILITY
-          S: * CAPABILITY IMAP4rev1 SUSPEND
-          S: A1 OK CAPABILITY completed.
-          C: A2 RESUME c3RhdGUgdG9rZW4=
-          S: A2 OK [RESUME c3RhdGUgdG9rZW4=] Configuration restored.
-        </artwork>
-      </figure>
+      <t>
+        Example 2: The client in Example 1 connects at a future time to
+        the same server and seeks to restore the previous IMAP session.
+
+        <list style="empty">
+          <t>
+            C: * OK [CAPABILITY IMAP4rev1 STARTTLS LOGINDISABLED SUSPEND]<vspace/>
+            C: A1 STARTTLS<vspace/>
+            S: A1 OK Being TLS negotiation now.<vspace/>
+            &lt;TLS negotiation, further commands are under <xref target="RFC5246">TLS</xref> layer&gt;<vspace/>
+            C: A2 CAPABILITY<vspace/>
+            S: * CAPABILITY IMAP4rev1 AUTH=PLAIN SUSPEND<vspace/>
+            S: A2 OK CAPABILITY completed.<vspace/>
+            C: A3 RESUME c3RhdGUgdG9rZW4=<vspace/>
+            S: A3 OK Suspend token valid.<vspace/>
+            C: A4 LOGIN joe passwd<vspace/>
+            S: A4 OK [RESUME c3RhdGUgdG9rZW4=] LOGIN completed and<vspace/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;configuration restored.
+          </t>
+        </list>
+      </t>
+
+      <t>
+        Example 3: The client in Example 1 connects at a future time to
+        the same server and seeks to restore the previous IMAP session. In
+        this example, the connection was pre-authenticated so the RESUME
+        command is issued in the authenticated state.
+
+        <list style="empty">
+          <t>
+            S: * PREAUTH [CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1<vspace/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUSPEND]<vspace/>
+            C: A1 RESUME c3RhdGUgdG9rZW4=<vspace/>
+            S: A1 OK [RESUME c3RhdGUgdG9rZW4=] Configuration restored.
+          </t>
+        </list>
+      </t>
     </section>
 
     <section anchor="syntax" title="Formal Syntax">
@@ -336,15 +335,19 @@
       </t>
 
       <t>
-        <list style="hanging" hangIndent="8">
-          <t hangText="capability =/">"SUSPEND"</t>
-          <t hangText="command-auth =/">resume / suspend</t>
-          <t hangText="response-data =/">"*" SP suspend-response CRLF</t>
-          <t hangText="resp-text-code =/">"RESUME" SP suspend-token</t>
-          <t hangText="resume =">"RESUME" SP suspend-token</t>
-          <t hangText="suspend =">"SUSPEND"</t>
-          <t hangText="suspend-response =">"SUSPEND" SP suspend-token</t>
-          <t hangText="suspend-token =">atom</t>
+        <list>
+          <t>
+            <list style="hanging" hangIndent="8">
+              <t hangText="capability =/">"SUSPEND"</t>
+              <t hangText="command-auth =/">resume / suspend</t>
+              <t hangText="response-data =/">"*" SP suspend-response CRLF</t>
+              <t hangText="resp-text-code =/">"RESUME" SP suspend-token</t>
+              <t hangText="resume =">"RESUME" SP suspend-token</t>
+              <t hangText="suspend =">"SUSPEND"</t>
+              <t hangText="suspend-response =">"SUSPEND" SP suspend-token</t>
+              <t hangText="suspend-token =">atom</t>
+            </list>
+          </t>
         </list>
       </t>
     </section>
