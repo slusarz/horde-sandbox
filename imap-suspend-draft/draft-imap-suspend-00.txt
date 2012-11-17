@@ -344,7 +344,8 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    SUSPEND extension, performs its initialization, and obtains a suspend
    token.
 
-      <Client successfully authenticates to server> C: A1 CAPABILITY
+      <Client successfully authenticates to server>
+      C: A1 CAPABILITY
       S: * CAPABILITY IMAP4rev1 ENABLE QRESYNC I18NLEVEL=1 SUSPEND
       S: A1 OK Capability command completed.
       C: A2 ENABLE QRESYNC
@@ -383,7 +384,6 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
    same server and seeks to restore the previous IMAP session.  In this
    example, the connection was pre-authenticated so the RESUME command
    is issued in the authenticated state.
-
 
 
 
@@ -435,12 +435,12 @@ Internet-Draft           IMAP SUSPEND Extension            November 2012
 
 8.  Security Considerations
 
-   It is believed that this extension doesn't add any security
-   considerations that are not already present in the base IMAP protocol
-   [RFC3501].
+   Depending on the server implementation of the suspend token, this
+   item may provide details on IMAP commands issued by the client while
+   authenticated.  To protect these details, Section 2.2 indicates that
+   the suspend token SHOULD NOT be output to the server until the TLS
+   negotiation is complete.
 
-
-9.  References
 
 
 
@@ -448,6 +448,13 @@ Slusarz                   Expires May 21, 2013                  [Page 8]
 
 Internet-Draft           IMAP SUSPEND Extension            November 2012
 
+
+   Otherwise, it is believed that this extension doesn't add any
+   security considerations that are not already present in the base IMAP
+   protocol [RFC3501].
+
+
+9.  References
 
 9.1.  Normative References
 
@@ -488,13 +495,6 @@ Author's Address
    USA
 
    Email: slusarz@horde.org
-
-
-
-
-
-
-
 
 
 
