@@ -108,6 +108,11 @@
         "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
         document are to be interpreted as described in <xref
         target="RFC2119">RFC 2119</xref>.</t>
+
+        <t>In examples, lines beginning with "S:" are sent by the IMAP server,
+        and lines beginning with "C:" are sent by the client.  Line breaks
+        may appear in example commands solely for editorial clarity; when
+        present in the actual message, they are represented by "CRLF".</t>
       </section>
     </section>
 
