@@ -190,9 +190,6 @@
         that issued the token was issued. After a successful RESUME command,
         the connection MUST be in the authenticated state (i.e. no mailbox
         is selected).</t>
-
-        <t>[todo: Allow multiple RESUME commands in not authenticated state;
-        only allow last RESUME command?]</t>
       </section>
 
       <section anchor="suspend-response" title="SUSPEND Response">
